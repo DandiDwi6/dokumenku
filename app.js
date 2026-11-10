@@ -17,8 +17,10 @@ var IC={dash:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3
 vendor:'<path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M14 9h5a1 1 0 0 1 1 1v11M2 21h20M8 8h2M8 12h2M8 16h2"/>',
 project:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
 year:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
 warn:'<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/>'};
 function ic(p,z){z=z||20;return '<svg viewBox="0 0 24 24" width="'+z+'" height="'+z+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[p]+'</svg>'}
+function dlb(u){var m=String(u||'').match(/\/d\/([-\w]+)/)||String(u||'').match(/[?&]id=([-\w]+)/);return m?'<a class="x" title="Unduh" href="https://drive.google.com/uc?export=download&amp;id='+m[1]+'" onclick="event.stopPropagation()">'+ic('dl',16)+'</a>':''}
 // ===== Aplikasi =====
 var D,V='dash',CH=false,FILES=[],ST={Vendor:['Aktif','Nonaktif'],Project:['Berjalan','Selesai','Ditunda']};
 function $(i){return document.getElementById(i)}
@@ -52,8 +54,8 @@ function dash(){
   +card(ic('vendor',24),'blue','Vendor aktif',D.vendor.filter(function(v){return v.Status!='Nonaktif'}).length,"go('vendor','Aktif')")
   +card(ic('project',24),'green','Project berjalan',pj.length,"go('project','Berjalan')")
   +card(ic('warn',24),'red','Dokumen perlu perhatian',ex.length,"document.getElementById('pdok').scrollIntoView({behavior:'smooth'})")+'</div><div class="cols">'
-  +pn('Dokumen perlu perhatian','Kedaluwarsa atau berakhir dalam 60 hari',ex.length,tbl(['Dokumen','Vendor','Berlaku sampai'],ex.map(function(d){return ['det(\'Vendor\',\''+d.VendorID+'\')',esc(d.Nama),esc(vn(d.VendorID)),exp(d.BerlakuSampai)]}),'Semua dokumen masih aman'),ex.length?'red':'','pdok')
-  +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
+  +pn('Dokumen perlu perhatian','Kedaluwarsa atau berakhir dalam 60 hari',ex.length,tbl(['Dokumen','Vendor','Berlaku sampai'],ex.map(function(d){return ['det(\'Vendor\',\''+d.VendorID+'\')',esc(d.Nama),esc(vn(d.VendorID)),exp(d.BerlakuSampai)]}),'✅ Semua dokumen masih aman'),ex.length?'red':'','pdok')
+  +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'✅ Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
   +'</div>'+pn('Project terbaru','5 project terakhir yang ditambahkan',D.project.length+' total',tbl(PH,D.project.slice(-5).reverse().map(pRow),'Belum ada project'))}
 function show(h){$('modal').innerHTML='<div class="mb" onclick="if(event.target==this)cl()"><div class="mc">'+h+'</div></div>'}
 function cl(){$('modal').innerHTML='';if(CH){CH=false;load()}}
@@ -111,7 +113,7 @@ function srch(q){
   return pg('Hasil pencarian','“'+esc(q)+'” · '+(v.length+p.length+d.length)+' hasil','')+
   pn('Vendor','',v.length,tbl(['Vendor','Kontak','Status'],v.map(function(r){return ['det(\'Vendor\',\''+r.ID+'\')',who(r.Nama,r.Kategori),nm(esc(r.PIC||'-'),esc(r.Telepon)),bd(r.Status)]}),'Tidak ada vendor yang cocok'))+
   pn('Project','',p.length,tbl(PH,p.map(pRow),'Tidak ada project yang cocok'))+
-  pn('Dokumen','',d.length,tbl(['Jenis','Nama file','Vendor'],d.map(function(r){return ['','<span class="cnt">'+esc(r.Jenis)+'</span>','<a href="'+esc(r.Link)+'" target="_blank">📄 '+esc(r.Nama)+'</a>',esc(vn(r.VendorID))]}),'Tidak ada dokumen yang cocok'))}
+  pn('Dokumen','',d.length,tbl(['Jenis','Nama file','Vendor',''],d.map(function(r){return ['','<span class="cnt">'+esc(r.Jenis)+'</span>','<a href="'+esc(r.Link)+'" target="_blank">📄 '+esc(r.Nama)+'</a>',esc(vn(r.VendorID)),'<div class="ra">'+dlb(r.Link)+'</div>']}),'Tidak ada dokumen yang cocok'))}
 var DT=[];
 function det(n,id){DT=[n,id];
   var isV=n=='Vendor',o=(isV?D.vendor:D.project).find(function(r){return r.ID==id}),skip=['ID','Nama','Status'],
@@ -122,7 +124,7 @@ function det(n,id){DT=[n,id];
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">'+ic('project')+'</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
   '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
-  '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button>']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
+  '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
 function frm(n,id){
   var o=id?(n=='Vendor'?D.vendor:D.project).find(function(r){return r.ID==id}):(n=='Project'?{Tahun:new Date().getFullYear(),Status:'Berjalan'}:{Status:'Aktif'}),
   h='<div class="dh"><div class="dt"><h2>'+(id?'Ubah ':'Tambah ')+n+'</h2><small>Isi data lalu simpan</small></div><button class="x" onclick="cl()">✕</button></div><div class="g">';

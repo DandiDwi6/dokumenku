@@ -177,3 +177,6 @@ td .who,td .nm{text-align:left}
 .ico.blue{color:var(--p)}.ico.green{color:#15803d}.ico.red{color:var(--red)}.ico.amber{color:#a15c00}
 .av.p{color:var(--p)}.ei{color:var(--p)}
 .logo i{border-radius:9px}
+
+.ra{display:flex;gap:6px;justify-content:flex-end}
+td .ra .x{margin:0;display:grid;place-items:center;text-decoration:none}
