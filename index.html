@@ -10,13 +10,16 @@ window.addEventListener('error',function(e){tampilError(e.message)});
 window.addEventListener('unhandledrejection',function(e){tampilError(e.reason&&e.reason.message||e.reason)});
 setTimeout(function(){var a=document.getElementById('app');if(a&&!a.innerHTML.trim())tampilError('Aplikasi tidak termuat (app.js tidak jalan atau tidak ditemukan).')},4000);
 </script></head><body>
-<header><div class="wrap hd">
+<div class="shell">
+<aside class="sb">
 <div class="logo"><i>🗂️</i>Database Vendor</div>
 <div id="nav"></div>
-<input id="q" placeholder="Cari vendor, project, atau dokumen..." oninput="render()" autocomplete="off">
-<button class="btn" onclick="upl('G')">Unggah Dokumen</button>
-</div></header>
-<main class="wrap" id="app"></main><div id="modal"></div>
+<div class="sbf"><button class="btn" onclick="upl('G')">Unggah Dokumen</button></div>
+</aside>
+<div class="mn">
+<div class="top"><input id="q" placeholder="Cari vendor, project, atau dokumen..." oninput="render()" autocomplete="off"></div>
+<main id="app"></main>
+</div></div><div id="modal"></div>
 <script src="config.js"></script>
 <script src="app.js"></script>
 </body></html>

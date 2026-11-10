@@ -29,7 +29,7 @@ function load(){$('app').innerHTML='<div class="ld"><div class="sp"></div>Memuat
 function go(v){V=v;$('q').value='';render()}
 function render(){
   if(!D)return;var q=$('q').value.trim().toLowerCase();
-  $('nav').innerHTML=[['dash','Dashboard'],['vendor','Vendor'],['project','Project'],['year','Per Tahun']].map(function(x){return '<a class="'+(V==x[0]&&!q?'on':'')+'" onclick="go(\''+x[0]+'\')">'+x[1]+'</a>'}).join('');
+  $('nav').innerHTML=[['dash','Dashboard','📊'],['vendor','Vendor','🏢'],['project','Project','🛠️'],['year','Per Tahun','📅']].map(function(x){return '<a class="'+(V==x[0]&&!q?'on':'')+'" onclick="go(\''+x[0]+'\')">'+'<span class="ni">'+x[2]+'</span>'+x[1]+'</a>'}).join('');
   $('app').innerHTML=q?srch(q):({dash:dash,vendor:vlist,project:plist,year:year})[V]()}
 function pn(t,s,n,b,c){return '<div class="pn"><div class="ph"><div><h3>'+t+'</h3><small>'+s+'</small></div><span class="cnt '+(c||'')+'">'+n+'</span></div>'+b+'</div>'}
 function pc(p){return ['det(\''+'Project'+'\',\''+p.ID+'\')',esc(p.Nama),esc(vOf(p.ID).map(function(v){return v.Nama}).join(', ')||'-'),esc(p.Tenggat||'-'),bd(p.Status)]}
@@ -103,16 +103,17 @@ function srch(q){
   pn('Vendor','',v.length,tbl(['Vendor','Kontak','Status'],v.map(function(r){return ['det(\'Vendor\',\''+r.ID+'\')',who(r.Nama,r.Kategori),nm(esc(r.PIC||'-'),esc(r.Telepon)),bd(r.Status)]}),'Tidak ada vendor yang cocok'))+
   pn('Project','',p.length,tbl(PH,p.map(pRow),'Tidak ada project yang cocok'))+
   pn('Dokumen','',d.length,tbl(['Jenis','Nama file','Vendor'],d.map(function(r){return ['','<span class="cnt">'+esc(r.Jenis)+'</span>','<a href="'+esc(r.Link)+'" target="_blank">📄 '+esc(r.Nama)+'</a>',esc(vn(r.VendorID))]}),'Tidak ada dokumen yang cocok'))}
-function det(n,id){
+var DT=[];
+function det(n,id){DT=[n,id];
   var isV=n=='Vendor',o=(isV?D.vendor:D.project).find(function(r){return r.ID==id}),skip=['ID','Nama','Status'],
   kv=D.cols[n].filter(function(c){return skip.indexOf(c)<0&&o[c]!==''&&o[c]!=null}).map(function(c){return '<div><small>'+c+'</small><div>'+esc(c=='Nilai'?rp(o[c]):o[c])+'</div></div>'}).join(''),
   docs=D.dok.filter(function(d){return isV?d.VendorID==id:d.ProjectID==id}),
   rel=isV?tbl(['Tahun','Project','Status'],pOf(id).map(function(p){return ['det(\'Project\',\''+p.ID+'\')',esc(p.Tahun),esc(p.Nama),bd(p.Status)]}),'Belum terlibat di project mana pun'):
     tbl(['Vendor','Kategori'],vOf(id).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,''),esc(v.Kategori)]}),'Belum ada vendor. Klik "Ubah data" untuk memilih vendor');
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">🛠️</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
-  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button></div>'+
+  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
-  '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai'],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
+  '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button>']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
 function frm(n,id){
   var o=id?(n=='Vendor'?D.vendor:D.project).find(function(r){return r.ID==id}):(n=='Project'?{Tahun:new Date().getFullYear(),Status:'Berjalan'}:{Status:'Aktif'}),
   h='<div class="dh"><div class="dt"><h2>'+(id?'Ubah ':'Tambah ')+n+'</h2><small>Isi data lalu simpan</small></div><button class="x" onclick="cl()">✕</button></div><div class="g">';
@@ -137,4 +138,16 @@ function pick(n){
   FILES=[].slice.call($('fl').files);var js=n=='G'?($('gp').value?D.jenisP:D.jenisV):n=='Vendor'?D.jenisV:D.jenisP;
   $('ul').innerHTML=FILES.length?'<div class="uh"><span>File</span><span>Jenis dokumen</span><span>Berlaku sampai</span><span>Status</span></div>'+FILES.map(function(f){return '<div class="ur"><span class="fn">📄 '+esc(f.name)+'</span><select>'+js.map(function(j){return '<option>'+esc(j)+'</option>'}).join('')+'</select><input type="date" title="Berlaku sampai (opsional)"><span class="st">Menunggu</span></div>'}).join(''):'';
   $('go').disabled=!FILES.length}
+function hapus(n,id){
+  var isV=n=='Vendor',o=(isV?D.vendor:D.project).find(function(r){return r.ID==id});if(!o)return;
+  var nd=D.dok.filter(function(d){return isV?d.VendorID==id:d.ProjectID==id}).length,
+  nr=(isV?pOf(id):vOf(id)).length;
+  if(!confirm('Hapus '+n.toLowerCase()+' "'+o.Nama+'"?\n\n• '+nd+' dokumen ikut terhapus (file di Google Drive dipindah ke Tempat Sampah)\n• '+(isV?'Dilepas dari '+nr+' project':'Relasi dengan '+nr+' vendor dihapus')+'\n\nTindakan ini tidak bisa dibatalkan dari aplikasi.'))return;
+  var bs=document.querySelectorAll('.acts button');
+  bs.forEach(function(b){b.disabled=true});CH=true;
+  google.script.run.withSuccessHandler(function(){cl()}).withFailureHandler(function(e){alert(e.message);CH=false;bs.forEach(function(b){b.disabled=false})}).deleteRow(n,id)}
+function hapusDok(id){
+  var d=D.dok.find(function(x){return x.ID==id});if(!d)return;
+  if(!confirm('Hapus dokumen "'+d.Nama+'"?\n\nFile di Google Drive dipindah ke Tempat Sampah.'))return;
+  google.script.run.withSuccessHandler(function(){D.dok=D.dok.filter(function(x){return x.ID!=id});render();det(DT[0],DT[1])}).withFailureHandler(function(e){alert(e.message)}).deleteDoc(id)}
 load();
