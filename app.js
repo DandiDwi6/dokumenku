@@ -9,7 +9,7 @@ function mk(ok,er){return new Proxy({},{get:function(_,k){
     fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({key:KEY,fn:k,args:a})})
       .then(function(r){return r.json()})
       .then(function(j){if(j.error)throw new Error(j.error);if(ok)ok(j.data)})
-      .catch(function(e){if(/kunci/i.test(e.message))localStorage.removeItem('vk');if(er)er(e);else console.error(e)});
+      .catch(function(e){if(/kunci/i.test(e.message)){localStorage.removeItem('vk');localStorage.removeItem('dc')}if(er)er(e);else console.error(e)});
   }}})}
 var google={script:{run:mk()}};
 // ===== Ikon =====
@@ -34,10 +34,11 @@ function vOf(pid){return D.pv.filter(function(x){return x.ProjectID==pid}).map(f
 function pOf(vid){return D.pv.filter(function(x){return x.VendorID==vid}).map(function(x){return D.project.find(function(p){return p.ID==x.ProjectID})}).filter(Boolean)}
 function exp(s){if(!s)return '';var d=dd(s);return d<0?'<span class="bd rd">Kedaluwarsa</span>':d<=60?'<span class="bd Ditunda">'+d+' hari lagi</span>':esc(s)}
 function tbl(h,r,m){return r.length?'<div class="tw"><table><tr>'+h.map(function(x){return '<th>'+x+'</th>'}).join('')+'</tr>'+r.map(function(x){return '<tr'+(x[0]?' onclick="'+x[0]+'"':'')+'>'+x.slice(1).map(function(c,i){return '<td data-label="'+h[i]+'">'+c+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>':'<div class="empty">'+(m||'Belum ada data')+'</div>'}
-function load(){$('app').innerHTML='<div class="ld"><div class="sp"></div>Memuat data…</div>';
-  google.script.run.withSuccessHandler(function(d){D=d;render()}).withFailureHandler(function(e){var f=/fetch|network/i.test(e.message);$('app').innerHTML='<div class="ld"><b>'+(f?'Tidak bisa terhubung ke server':'Gagal memuat')+'</b><br>'+(f?'Periksa koneksi internet atau DNS, lalu coba lagi.':esc(e.message))+'<br><br><button class="btn" onclick="load()">Coba lagi</button></div>'}).getData()}
-var FL='';
-function go(v,f){V=v;FL=f||'';if(v=='doc')DF={j:'',v:'',s:FL};$('q').value='';render()}
+function load(fresh){var c=null;if(!fresh){try{c=JSON.parse(localStorage.getItem('dc'))}catch(e){}}
+  if(c&&c.vendor){D=c;render()}else $('app').innerHTML='<div class="ld"><div class="sp"></div>Memuat data…</div>';
+  google.script.run.withSuccessHandler(function(d){D=d;try{localStorage.setItem('dc',JSON.stringify(d))}catch(e){}render()}).withFailureHandler(function(e){if(D&&c)return;var f=/fetch|network/i.test(e.message);$('app').innerHTML='<div class="ld"><b>'+(f?'Tidak bisa terhubung ke server':'Gagal memuat')+'</b><br>'+(f?'Periksa koneksi internet atau DNS, lalu coba lagi.':esc(e.message))+'<br><br><button class="btn" onclick="load()">Coba lagi</button></div>'}).getData()}
+var FL='',LIM=50;
+function go(v,f){V=v;FL=f||'';LIM=50;if(v=='doc')DF={j:'',v:'',s:FL};$('q').value='';render()}
 function fbar(){return FL?'<div class="chips"><a class="chip on" onclick="go(V)">Filter: '+FL+' ✕</a></div>':''}
 function render(){
   if(!D)return;var q=$('q').value.trim().toLowerCase();
@@ -59,7 +60,7 @@ function dash(){
   +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
   +'</div>'+pn('Project terbaru','5 project terakhir yang ditambahkan',D.project.length+' total',tbl(PH,D.project.slice(-5).reverse().map(pRow),'Belum ada project'))}
 function show(h){$('modal').innerHTML='<div class="mb" onclick="if(event.target==this)cl()"><div class="mc">'+h+'</div></div>'}
-function cl(){$('modal').innerHTML='';if(CH){CH=false;load()}}
+function cl(){$('modal').innerHTML='';if(CH){CH=false;load(1)}}
 function save(n,id){
   var o=id?Object.assign({},(n=='Vendor'?D.vendor:D.project).find(function(r){return r.ID==id})):{};
   document.querySelectorAll('[data-k]').forEach(function(e){o[e.dataset.k]=e.type=='number'&&e.value!==''?Number(e.value):e.value});
@@ -90,11 +91,11 @@ function vlist(){
   if(!D.vendor.length)return emp('Vendor','Vendor',ic('vendor',34));
   var a=D.vendor.filter(function(v){return v.Status!='Nonaktif'}).length;
   return pg('Vendor',D.vendor.length+' vendor · '+a+' aktif','<button class="btn" onclick="frm(\'Vendor\')">+ Tambah Vendor</button>')+fbar()+'<div class="pn">'+
-  tbl(['Vendor','Kontak','Dokumen','Status'],(FL?D.vendor.filter(function(v){return FL=='Aktif'?v.Status!='Nonaktif':v.Status==FL}):D.vendor).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,v.Kategori),nm(esc(v.PIC||'-'),esc(v.Telepon)),'<span class="cnt">'+D.dok.filter(function(d){return d.VendorID==v.ID}).length+' file</span>',bd(v.Status)]}))+'</div>'}
+  tbl(['Vendor','Kontak','Dokumen','Status'],VL().slice(0,LIM).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,v.Kategori),nm(esc(v.PIC||'-'),esc(v.Telepon)),'<span class="cnt">'+D.dok.filter(function(d){return d.VendorID==v.ID}).length+' file</span>',bd(v.Status)]}))+'</div>'+mr(VL().length)}
 function plist(){
   if(!D.project.length)return emp('Project','Project',ic('project',34));
   var t=D.project.reduce(function(s,p){return s+Number(p.Nilai||0)},0);
-  return pg('Project',D.project.length+' project · total '+rp(t),'<button class="btn" onclick="frm(\'Project\')">+ Tambah Project</button>')+fbar()+'<div class="pn">'+tbl(PH,(FL?D.project.filter(function(p){return p.Status==FL}):D.project).slice().reverse().map(pRow),'Tidak ada project dengan status ini')+'</div>'}
+  return pg('Project',D.project.length+' project · total '+rp(t),'<button class="btn" onclick="frm(\'Project\')">+ Tambah Project</button>')+fbar()+'<div class="pn">'+tbl(PH,PL().slice(0,LIM).map(pRow),'Tidak ada project dengan status ini')+'</div>'+mr(PL().length)}
 function year(){
   var ys=[];D.project.forEach(function(p){if(ys.indexOf(String(p.Tahun))<0)ys.push(String(p.Tahun))});ys.sort().reverse();
   var y=window.YR&&ys.indexOf(window.YR)>=0?window.YR:ys[0];
@@ -123,7 +124,7 @@ function det(n,id){DT=[n,id];
   rel=isV?tbl(['Tahun','Project','Status'],pOf(id).map(function(p){return ['det(\'Project\',\''+p.ID+'\')',esc(p.Tahun),esc(p.Nama),bd(p.Status)]}),'Belum terlibat di project mana pun'):
     tbl(['Vendor','Kategori'],vOf(id).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,''),esc(v.Kategori)]}),'Belum ada vendor. Klik "Ubah data" untuk memilih vendor');
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">'+ic('project')+'</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
-  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
+  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
   '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
 function frm(n,id){
@@ -173,6 +174,9 @@ function dlist(){
   var any=DF.j||DF.v||DF.s,
   f=sel('j','Semua jenis',js.map(function(x){return [x,x]}))+sel('v','Semua vendor',D.vendor.map(function(v){return [v.ID,v.Nama]}))+sel('s','Semua status',[['perlu','Perlu perhatian'],['exp','Kedaluwarsa'],['soon','Segera habis (60 hari)'],['ok','Masih berlaku'],['none','Tanpa masa berlaku']]);
   return pg('Dokumen',D.dok.length+' dokumen'+(any?' · '+L.length+' ditampilkan':''),up)+'<div class="fl">'+f+(any?'<a class="chip" onclick="DF={j:\'\',v:\'\',s:\'\'};render()">Reset filter</a>':'')+'</div><div class="pn">'+
-  tbl(['Dokumen','Jenis','Vendor','Project','Berlaku sampai',''],L.map(function(d){var p=d.ProjectID?D.project.find(function(x){return x.ID==d.ProjectID}):null;
-    return ['','<a href="'+esc(d.Link)+'" target="_blank">'+esc(d.Nama)+'</a>','<span class="cnt">'+esc(d.Jenis)+'</span>','<a class="lk2" onclick="det(\'Vendor\',\''+d.VendorID+'\')">'+esc(vn(d.VendorID))+'</a>',p?'<a class="lk2" onclick="det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'<span class="mu">Umum</span>',exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Tidak ada dokumen yang cocok dengan filter')+'</div>'}
+  tbl(['Dokumen','Jenis','Vendor','Project','Berlaku sampai',''],L.slice(0,LIM).map(function(d){var p=d.ProjectID?D.project.find(function(x){return x.ID==d.ProjectID}):null;
+    return ['','<a href="'+esc(d.Link)+'" target="_blank">'+esc(d.Nama)+'</a>','<span class="cnt">'+esc(d.Jenis)+'</span>','<a class="lk2" onclick="det(\'Vendor\',\''+d.VendorID+'\')">'+esc(vn(d.VendorID))+'</a>',p?'<a class="lk2" onclick="det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'<span class="mu">Umum</span>',exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Tidak ada dokumen yang cocok dengan filter')+'</div>'+mr(L.length)}
+function VL(){return FL?D.vendor.filter(function(v){return FL=='Aktif'?v.Status!='Nonaktif':v.Status==FL}):D.vendor}
+function PL(){return (FL?D.project.filter(function(p){return p.Status==FL}):D.project).slice().reverse()}
+function mr(n){return n>LIM?'<div class="more"><button class="btn s" onclick="LIM+=50;render()">Tampilkan 50 lagi · sisa '+(n-LIM)+'</button></div>':''}
 load();
