@@ -141,3 +141,5 @@ label.ck:has(input:checked){background:var(--pl);border-color:var(--p);color:var
 .top{padding:14px 14px 0}main{padding:18px 14px 48px}
 .pt h2{font-size:22px}.mc{padding:18px}
 .uh{display:none}.ur{grid-template-columns:1fr}}
+
+.gr .lk{cursor:pointer;transition:.15s}.gr .lk:hover{border-color:#c9d2ea;box-shadow:0 8px 20px -10px #2347c855;transform:translateY(-2px)}
