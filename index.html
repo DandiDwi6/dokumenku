@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Database Vendor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>
+function tampilError(m){var a=document.getElementById('app');if(a)a.innerHTML='<div class="ld"><b>Terjadi error</b><br>'+String(m).replace(/</g,'&lt;')+'<br><small>Tekan Ctrl+F5. Jika masih sama, kirim pesan ini ke Claude.</small></div>'}
+window.addEventListener('error',function(e){tampilError(e.message)});
+window.addEventListener('unhandledrejection',function(e){tampilError(e.reason&&e.reason.message||e.reason)});
+setTimeout(function(){var a=document.getElementById('app');if(a&&!a.innerHTML.trim())tampilError('Aplikasi tidak termuat (app.js tidak jalan atau tidak ditemukan).')},4000);
+</script></head><body>
+<header><div class="wrap hd">
+<div class="logo"><i>🗂️</i>Database Vendor</div>
+<div id="nav"></div>
+<input id="q" placeholder="Cari vendor, project, atau dokumen..." oninput="render()" autocomplete="off">
+<button class="btn" onclick="upl('G')">Unggah Dokumen</button>
+</div></header>
+<main class="wrap" id="app"></main><div id="modal"></div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body></html>
