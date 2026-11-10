@@ -19,6 +19,7 @@ project:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 
 year:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
 dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
 doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',
 warn:'<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/>'};
 function ic(p,z){z=z||20;return '<svg viewBox="0 0 24 24" width="'+z+'" height="'+z+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[p]+'</svg>'}
 function dlb(u){var m=String(u||'').match(/\/d\/([-\w]+)/)||String(u||'').match(/[?&]id=([-\w]+)/);return m?'<a class="x" title="Unduh" href="https://drive.google.com/uc?export=download&amp;id='+m[1]+'" onclick="event.stopPropagation()">'+ic('dl',16)+'</a>':''}
@@ -56,8 +57,8 @@ function dash(){
   +card(ic('vendor',24),'blue','Vendor aktif',D.vendor.filter(function(v){return v.Status!='Nonaktif'}).length,"go('vendor','Aktif')")
   +card(ic('project',24),'green','Project berjalan',pj.length,"go('project','Berjalan')")
   +card(ic('warn',24),'red','Dokumen perlu perhatian',ex.length,"go('doc','perlu')")+'</div><div class="cols">'
-  +pn('Dokumen perlu perhatian','Kedaluwarsa atau berakhir dalam 60 hari',ex.length,tbl(['Dokumen','Vendor','Berlaku sampai'],ex.map(function(d){return ['det(\'Vendor\',\''+d.VendorID+'\')',esc(d.Nama),esc(vn(d.VendorID)),exp(d.BerlakuSampai)]}),'Semua dokumen masih aman'),ex.length?'red':'','pdok')
-  +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
+  +pn('Dokumen perlu perhatian','Kedaluwarsa atau berakhir dalam 60 hari',ex.length,tbl(['Dokumen','Vendor','Berlaku sampai'],ex.map(function(d){return ['det(\'Vendor\',\''+d.VendorID+'\')',esc(d.Nama),esc(vn(d.VendorID)),exp(d.BerlakuSampai)]}),'✅ Semua dokumen masih aman'),ex.length?'red':'','pdok')
+  +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'✅ Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
   +'</div>'+pn('Project terbaru','5 project terakhir yang ditambahkan',D.project.length+' total',tbl(PH,D.project.slice(-5).reverse().map(pRow),'Belum ada project'))}
 function show(h){$('modal').innerHTML='<div class="mb" onclick="if(event.target==this)cl()"><div class="mc">'+h+'</div></div>'}
 function cl(){$('modal').innerHTML='';if(CH){CH=false;load(1)}}
@@ -124,9 +125,9 @@ function det(n,id){DT=[n,id];
   rel=isV?tbl(['Tahun','Project','Status'],pOf(id).map(function(p){return ['det(\'Project\',\''+p.ID+'\')',esc(p.Tahun),esc(p.Nama),bd(p.Status)]}),'Belum terlibat di project mana pun'):
     tbl(['Vendor','Kategori'],vOf(id).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,''),esc(v.Kategori)]}),'Belum ada vendor. Klik "Ubah data" untuk memilih vendor');
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">'+ic('project')+'</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
-  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
+  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button><button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
-  '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
+  '<div class="sec"><h3>Dokumen ('+docs.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],docs.map(function(d){return ['','<span class="cnt">'+esc(d.Jenis)+'</span>','<a href="'+esc(d.Link)+'" target="_blank">📄 '+esc(d.Nama)+'</a>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Ubah dokumen" onclick="edDok(\''+d.ID+'\')">'+ic('edit',16)+'</button><button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Belum ada dokumen. Klik "Unggah dokumen" untuk menambahkan.')+'</div>')}
 function frm(n,id){
   var o=id?(n=='Vendor'?D.vendor:D.project).find(function(r){return r.ID==id}):(n=='Project'?{Tahun:new Date().getFullYear(),Status:'Berjalan'}:{Status:'Aktif'}),
   h='<div class="dh"><div class="dt"><h2>'+(id?'Ubah ':'Tambah ')+n+'</h2><small>Isi data lalu simpan</small></div><button class="x" onclick="cl()">✕</button></div><div class="g">';
@@ -175,8 +176,18 @@ function dlist(){
   f=sel('j','Semua jenis',js.map(function(x){return [x,x]}))+sel('v','Semua vendor',D.vendor.map(function(v){return [v.ID,v.Nama]}))+sel('s','Semua status',[['perlu','Perlu perhatian'],['exp','Kedaluwarsa'],['soon','Segera habis (60 hari)'],['ok','Masih berlaku'],['none','Tanpa masa berlaku']]);
   return pg('Dokumen',D.dok.length+' dokumen'+(any?' · '+L.length+' ditampilkan':''),up)+'<div class="fl">'+f+(any?'<a class="chip" onclick="DF={j:\'\',v:\'\',s:\'\'};render()">Reset filter</a>':'')+'</div><div class="pn">'+
   tbl(['Dokumen','Jenis','Vendor','Project','Berlaku sampai',''],L.slice(0,LIM).map(function(d){var p=d.ProjectID?D.project.find(function(x){return x.ID==d.ProjectID}):null;
-    return ['','<a href="'+esc(d.Link)+'" target="_blank">'+esc(d.Nama)+'</a>','<span class="cnt">'+esc(d.Jenis)+'</span>','<a class="lk2" onclick="det(\'Vendor\',\''+d.VendorID+'\')">'+esc(vn(d.VendorID))+'</a>',p?'<a class="lk2" onclick="det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'<span class="mu">Umum</span>',exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Tidak ada dokumen yang cocok dengan filter')+'</div>'+mr(L.length)}
+    return ['','<a href="'+esc(d.Link)+'" target="_blank">'+esc(d.Nama)+'</a>','<span class="cnt">'+esc(d.Jenis)+'</span>','<a class="lk2" onclick="det(\'Vendor\',\''+d.VendorID+'\')">'+esc(vn(d.VendorID))+'</a>',p?'<a class="lk2" onclick="det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'<span class="mu">Umum</span>',exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Ubah dokumen" onclick="edDok(\''+d.ID+'\')">'+ic('edit',16)+'</button><button class="x" title="Hapus dokumen" onclick="hapusDok(\''+d.ID+'\')">🗑</button></div>']}),'Tidak ada dokumen yang cocok dengan filter')+'</div>'+mr(L.length)}
 function VL(){return FL?D.vendor.filter(function(v){return FL=='Aktif'?v.Status!='Nonaktif':v.Status==FL}):D.vendor}
 function PL(){return (FL?D.project.filter(function(p){return p.Status==FL}):D.project).slice().reverse()}
 function mr(n){return n>LIM?'<div class="more"><button class="btn s" onclick="LIM+=50;render()">Tampilkan 50 lagi · sisa '+(n-LIM)+'</button></div>':''}
+var EB=null;
+function edBack(){if(EB)det(EB[0],EB[1]);else cl()}
+function edDok(id){
+  var d=D.dok.find(function(x){return x.ID==id});if(!d)return;
+  var js=(d.ProjectID?D.jenisP:D.jenisV).slice();if(js.indexOf(d.Jenis)<0)js.unshift(d.Jenis);
+  EB=$('modal').innerHTML?DT.slice():null;
+  show('<div class="dh"><div class="dt"><h2>Ubah dokumen</h2><small>'+esc(d.Nama)+'</small></div><button class="x" onclick="edBack()">✕</button></div><div class="g"><label>Jenis dokumen<select id="ej">'+js.map(function(j){return '<option'+(j==d.Jenis?' selected':'')+'>'+esc(j)+'</option>'}).join('')+'</select></label><label>Berlaku sampai<input type="date" id="eb" value="'+esc(d.BerlakuSampai||'')+'"></label></div><div class="ft"><button class="btn s" onclick="edBack()">Batal</button><button class="btn" id="sv" onclick="svDok(\''+id+'\')">Simpan</button></div>')}
+function svDok(id){
+  var j=$('ej').value,b=$('eb').value;$('sv').disabled=true;$('sv').textContent='Menyimpan…';
+  google.script.run.withSuccessHandler(function(){var d=D.dok.find(function(x){return x.ID==id});d.Jenis=j;d.BerlakuSampai=b;try{localStorage.setItem('dc',JSON.stringify(D))}catch(e){}render();edBack()}).withFailureHandler(function(e){alert(e.message);$('sv').disabled=false;$('sv').textContent='Simpan'}).updateDoc(id,{Jenis:j,BerlakuSampai:b})}
 load();
