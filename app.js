@@ -19,6 +19,7 @@ project:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 
 year:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
 dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',
 doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
 edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>',
 warn:'<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/>'};
 function ic(p,z){z=z||20;return '<svg viewBox="0 0 24 24" width="'+z+'" height="'+z+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+IC[p]+'</svg>'}
@@ -116,7 +117,7 @@ function srch(q){
   return pg('Hasil pencarian','“'+esc(q)+'” · '+(v.length+p.length+d.length)+' hasil','')+
   pn('Vendor','',v.length,tbl(['Vendor','Kontak','Status'],v.map(function(r){return ['det(\'Vendor\',\''+r.ID+'\')',who(r.Nama,r.Kategori),nm(esc(r.PIC||'-'),esc(r.Telepon)),bd(r.Status)]}),'Tidak ada vendor yang cocok'))+
   pn('Project','',p.length,tbl(PH,p.map(pRow),'Tidak ada project yang cocok'))+
-  pn('Dokumen','',d.length,tbl(['Jenis','Nama file','Vendor',''],d.map(function(r){return ['ddet(\''+r.ID+'\')','<span class="cnt">'+esc(r.Jenis)+'</span>','<span class="dn">📄 '+esc(r.Nama)+'</span>',esc(vn(r.VendorID)),'<div class="ra">'+dlb(r.Link)+'</div>']}),'Tidak ada dokumen yang cocok'))}
+  pn('Dokumen','',d.length,tbl(['Jenis','Nama file','Vendor',''],d.map(function(r){return ['ddet(\''+r.ID+'\')','<span class="cnt">'+esc(r.Jenis)+'</span>','<span class="dn">📄 '+esc(r.Nama)+'</span>',esc(vn(r.VendorID)),'<div class="ra">'+eyeb(r.ID)+dlb(r.Link)+'</div>']}),'Tidak ada dokumen yang cocok'))}
 var DT=[];
 function det(n,id){DT=[n,id];
   var isV=n=='Vendor',o=(isV?D.vendor:D.project).find(function(r){return r.ID==id}),skip=['ID','Nama','Status'],
@@ -125,7 +126,7 @@ function det(n,id){DT=[n,id];
   rel=isV?tbl(['Tahun','Project','Status'],pOf(id).map(function(p){return ['det(\'Project\',\''+p.ID+'\')',esc(p.Tahun),esc(p.Nama),bd(p.Status)]}),'Belum terlibat di project mana pun'):
     tbl(['Vendor','Kategori'],vOf(id).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,''),esc(v.Kategori)]}),'Belum ada vendor (opsional). Klik "Ubah data" untuk menambahkan vendor.');
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">'+ic('project')+'</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
-  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">Unggah dokumen</button>'+(isV?'':'<button class="btn s" onclick="upl(\''+n+'\',\''+id+'\',1)">Unggah finance</button>')+'<button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
+  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button>'+(isV?'':'<button class="btn s" onclick="upl(\''+n+'\',\''+id+'\',1)">⬆ Unggah finance</button>')+'<button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
   dsecs(isV,docs))}
 function frm(n,id){
@@ -167,7 +168,7 @@ function hapusDok(id){
 var DF={j:'',v:'',s:'',k:'',g:''};
 function dst(d){if(!d.BerlakuSampai)return 'none';var n=dd(d.BerlakuSampai);return n<0?'exp':n<=60?'soon':'ok'}
 function drow(d){var p=d.ProjectID?D.project.find(function(x){return x.ID==d.ProjectID}):null;
-  return ['ddet(\''+d.ID+'\')','<span class="dn">'+esc(d.Nama)+'</span>','<span class="cnt'+(cat(d)=='f'?' fin':'')+'">'+esc(d.Jenis)+'</span>',(d.VendorID?'<a class="lk2" onclick="event.stopPropagation();det(\'Vendor\',\''+d.VendorID+'\')">'+esc(vn(d.VendorID))+'</a>':'<span class="mu">-</span>'),p?'<a class="lk2" onclick="event.stopPropagation();det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'<span class="mu">Umum</span>',exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Ubah dokumen" onclick="event.stopPropagation();edDok(\''+d.ID+'\')">'+ic('edit',16)+'</button><button class="x" title="Hapus dokumen" onclick="event.stopPropagation();hapusDok(\''+d.ID+'\')">🗑</button></div>']}
+  return ['ddet(\''+d.ID+'\')','<span class="dn">'+esc(d.Nama)+'</span>','<span class="cnt'+(cat(d)=='f'?' fin':'')+'">'+esc(d.Jenis)+'</span>',(d.VendorID?'<a class="lk2" onclick="event.stopPropagation();det(\'Vendor\',\''+d.VendorID+'\')">'+esc(vn(d.VendorID))+'</a>':'<span class="mu">-</span>'),p?'<a class="lk2" onclick="event.stopPropagation();det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'<span class="mu">Umum</span>',exp(d.BerlakuSampai)||'-','<div class="ra">'+eyeb(d.ID)+dlb(d.Link)+'<button class="x" title="Ubah dokumen" onclick="event.stopPropagation();edDok(\''+d.ID+'\')">'+ic('edit',16)+'</button><button class="x" title="Hapus dokumen" onclick="event.stopPropagation();hapusDok(\''+d.ID+'\')">🗑</button></div>']}
 var DH=['Dokumen','Jenis','Vendor','Project','Berlaku sampai',''];
 function dgrp(L,g){
   var m={},ks=[];
@@ -180,7 +181,7 @@ function dgrp(L,g){
   var op=ks.length<=8;
   return ks.slice(0,LIM).map(function(k){var x=m[k];return '<details class="grp"'+(op?' open':'')+'><summary><span>'+esc(x.l)+'</span><span class="cnt">'+x.r.length+'</span></summary>'+tbl(DH,x.r.map(drow),'')+'</details>'}).join('')+mr(ks.length)}
 function dlist(){
-  var up='<button class="btn" onclick="upl(\'G\')">Unggah Dokumen</button>';
+  var up='<button class="btn" onclick="upl(\'G\')">+ Unggah Dokumen</button>';
   if(!D.dok.length)return pg('Dokumen','Belum ada dokumen',up)+'<div class="pn"><div class="empty cta"><div class="ei">'+ic('doc',34)+'</div><b>Belum ada dokumen</b><p>Unggah dokumen pertama untuk mulai mengisi database.</p>'+up+'</div></div>';
   var js=[];D.dok.forEach(function(d){if(d.Jenis&&js.indexOf(d.Jenis)<0)js.push(d.Jenis)});js.sort();
   var L=D.dok.filter(function(d){var s=dst(d);return (!DF.k||cat(d)==DF.k)&&(!DF.j||d.Jenis==DF.j)&&(!DF.v||d.VendorID==DF.v)&&(!DF.s||(DF.s=='perlu'?(s=='exp'||s=='soon'):s==DF.s))}).reverse();
@@ -220,7 +221,7 @@ function isF(d){var f=D.jenisF||[];return !!d.ProjectID&&f.indexOf(d.Jenis)>=0&&
 function cat(d){return !d.ProjectID?'u':isF(d)?'f':'p'}
 function JG(proj){return proj?[['Dokumen Project',D.jenisP],['Dokumen Finance',D.jenisF||[]]]:[['Dokumen Vendor',D.jenisV]]}
 function jopt(g,sel){return g.map(function(x){return x[1].length?'<optgroup label="'+x[0]+'">'+x[1].map(function(j){return '<option'+(j==sel?' selected':'')+'>'+esc(j)+'</option>'}).join('')+'</optgroup>':''}).join('')}
-function drows(l,isV){return l.map(function(d){return ['ddet(\''+d.ID+'\')','<span class="cnt">'+esc(d.Jenis)+'</span>','<span class="dn">📄 '+esc(d.Nama)+'</span>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<div class="ra">'+dlb(d.Link)+'<button class="x" title="Ubah dokumen" onclick="event.stopPropagation();edDok(\''+d.ID+'\')">'+ic('edit',16)+'</button><button class="x" title="Hapus dokumen" onclick="event.stopPropagation();hapusDok(\''+d.ID+'\')">🗑</button></div>']})}
+function drows(l,isV){return l.map(function(d){return ['ddet(\''+d.ID+'\')','<span class="cnt">'+esc(d.Jenis)+'</span>','<span class="dn">📄 '+esc(d.Nama)+'</span>',isV?esc(d.ProjectID?(D.project.find(function(p){return p.ID==d.ProjectID})||{}).Nama:'Umum'):esc(vn(d.VendorID)),exp(d.BerlakuSampai)||'-','<div class="ra">'+eyeb(d.ID)+dlb(d.Link)+'<button class="x" title="Ubah dokumen" onclick="event.stopPropagation();edDok(\''+d.ID+'\')">'+ic('edit',16)+'</button><button class="x" title="Hapus dokumen" onclick="event.stopPropagation();hapusDok(\''+d.ID+'\')">🗑</button></div>']})}
 function dsec(t,l,isV,m){return '<div class="sec"><h3>'+t+' ('+l.length+')</h3>'+tbl(['Jenis','Nama file',isV?'Project':'Vendor','Berlaku sampai',''],drows(l,isV),m)+'</div>'}
 function dsecs(isV,docs){
   var u=docs.filter(function(d){return !d.ProjectID}),f=docs.filter(isF),p=docs.filter(function(d){return d.ProjectID&&!isF(d)});
@@ -234,7 +235,7 @@ function dlu(u){var m=String(u||'').match(/\/d\/([-\w]+)/)||String(u||'').match(
 function fmtT(s){if(!s)return '-';var t=new Date(String(s).slice(0,10)+'T00:00:00');return isNaN(t)?esc(s):t.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}
 function terkait(d){var p=d.ProjectID?D.project.find(function(x){return x.ID==d.ProjectID}):null;return p?nm(esc(p.Nama),esc(d.VendorID?vn(d.VendorID):'Tanpa vendor')):nm(esc(vn(d.VendorID)),'Dokumen vendor')}
 function ddBack(){DDid=null;if(PB)det(PB[0],PB[1]);else cl()}
-function ddet(id,keep){
+function ddet(id,keep,pv){
   var d=D.dok.find(function(x){return x.ID==id});if(!d)return;
   if(!keep)PB=$('modal').innerHTML?DT.slice():null;
   DDid=id;
@@ -247,9 +248,16 @@ function ddet(id,keep){
   kv=function(t,x){return '<div><small>'+t+'</small><div>'+x+'</div></div>'},
   du=dlu(d.Link);
   show('<div class="dh dd"><span class="av p">'+ic('doc')+'</span><div class="dt"><h2>'+esc(d.Nama)+'</h2><small>'+kt+' · '+esc(d.Jenis)+'</small></div><button class="x" onclick="ddBack()">✕</button></div>'+
-  '<div class="acts"><a class="btn" href="'+esc(d.Link)+'" target="_blank">Buka file</a>'+(du?'<a class="btn s" href="'+du+'">Unduh</a>':'')+'<button class="btn s" onclick="edDok(\''+d.ID+'\')">'+ic('edit',15)+' Ubah</button><button class="btn s dg" onclick="hapusDok(\''+d.ID+'\')">🗑 Hapus</button></div>'+
+  '<div class="acts">'+(pvu(d.Link)?'<button class="btn" id="pvb" onclick="ddpv(\''+d.ID+'\')">Lihat dokumen</button>':'')+'<a class="btn s" href="'+esc(d.Link)+'" target="_blank">Buka di tab baru</a>'+(du?'<a class="btn s" href="'+du+'">Unduh</a>':'')+'<button class="btn s" onclick="edDok(\''+d.ID+'\')">'+ic('edit',15)+' Ubah</button><button class="btn s dg" onclick="hapusDok(\''+d.ID+'\')">🗑 Hapus</button></div>'+'<div id="pv"></div>'+
   '<div class="rl">'+rc('Project',p?'<a onclick="det(\'Project\',\''+p.ID+'\')">'+esc(p.Nama)+'</a>':'',p?'Kontrak '+esc(p.Tahun)+(p.NoKontrak?' · '+esc(p.NoKontrak):'')+' · '+esc(p.Status):'')+
   rc('Vendor',v?'<a onclick="det(\'Vendor\',\''+v.ID+'\')">'+esc(v.Nama)+'</a>':'',v?[v.Kategori,v.PIC,v.Telepon].filter(Boolean).map(esc).join(' · '):'')+'</div>'+
   '<div class="kv">'+kv('Kategori',kt)+kv('Jenis dokumen',esc(d.Jenis))+kv('Berlaku sampai',fmtT(d.BerlakuSampai)+stb)+kv('Diunggah',fmtT(d.Diunggah))+kv('Diunggah oleh',esc(d.Oleh||'-'))+kv('Lokasi folder Drive',esc(path))+'</div>'+
-  '<div class="ft"><button class="btn s" onclick="ddBack()">Tutup</button></div>')}
+  '<div class="ft"><button class="btn s" onclick="ddBack()">Tutup</button></div>');if(pv)ddpv(id)}
+function pvu(u){var m=String(u||'').match(/\/d\/([-\w]+)/)||String(u||'').match(/[?&]id=([-\w]+)/);return m?'https://drive.google.com/file/d/'+m[1]+'/preview':''}
+function eyeb(id){return '<button class="x" title="Lihat dokumen" onclick="event.stopPropagation();ddet(\''+id+'\',0,1)">'+ic('eye',16)+'</button>'}
+function ddpv(id){
+  var b=$('pv'),w=document.querySelector('#modal .mc'),d=D.dok.find(function(x){return x.ID==id});if(!b||!d)return;
+  if(b.innerHTML){b.innerHTML='';w.classList.remove('wide');$('pvb').textContent='Lihat dokumen';return}
+  b.innerHTML='<div class="pvw"><div class="ld"><div class="sp"></div>Memuat dokumen…</div><iframe src="'+pvu(d.Link)+'" allow="autoplay"></iframe></div><p class="mu pvh">Dokumen tidak tampil? Pastikan Anda login ke akun Google yang punya akses, atau pakai "Buka di tab baru".</p>';
+  w.classList.add('wide');$('pvb').textContent='Sembunyikan dokumen'}
 load();
