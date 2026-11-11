@@ -57,8 +57,8 @@ function dash(){
   +card(ic('vendor',24),'blue','Vendor aktif',D.vendor.filter(function(v){return v.Status!='Nonaktif'}).length,"go('vendor','Aktif')")
   +card(ic('project',24),'green','Project berjalan',pj.length,"go('project','Berjalan')")
   +card(ic('warn',24),'red','Dokumen perlu perhatian',ex.length,"go('doc','perlu')")+'</div><div class="cols">'
-  +pn('Dokumen perlu perhatian','Kedaluwarsa atau berakhir dalam 60 hari',ex.length,tbl(['Dokumen','Terkait','Berlaku sampai'],ex.map(function(d){return ['ddet(\''+d.ID+'\')',esc(d.Nama),terkait(d),exp(d.BerlakuSampai)]}),'✅ Semua dokumen masih aman'),ex.length?'red':'','pdok')
-  +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'✅ Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
+  +pn('Dokumen perlu perhatian','Kedaluwarsa atau berakhir dalam 60 hari',ex.length,tbl(['Dokumen','Terkait','Berlaku sampai'],ex.map(function(d){return ['ddet(\''+d.ID+'\')',esc(d.Nama),terkait(d),exp(d.BerlakuSampai)]}),'Semua dokumen masih aman'),ex.length?'red':'','pdok')
+  +pn('Project mendekati tenggat','Project berjalan dengan tenggat dalam 30 hari',tg.length,tbl(['Project','Vendor','Tenggat','Status'],tg.map(pc),'Tidak ada tenggat dalam waktu dekat'),tg.length?'red':'')
   +'</div>'+pn('Project terbaru','5 project terakhir yang ditambahkan',D.project.length+' total',tbl(PH,D.project.slice(-5).reverse().map(pRow),'Belum ada project'))}
 function show(h){$('modal').innerHTML='<div class="mb" onclick="if(event.target==this)cl()"><div class="mc">'+h+'</div></div>'}
 function cl(){$('modal').innerHTML='';if(CH){CH=false;load(1)}}
@@ -125,7 +125,7 @@ function det(n,id){DT=[n,id];
   rel=isV?tbl(['Tahun','Project','Status'],pOf(id).map(function(p){return ['det(\'Project\',\''+p.ID+'\')',esc(p.Tahun),esc(p.Nama),bd(p.Status)]}),'Belum terlibat di project mana pun'):
     tbl(['Vendor','Kategori'],vOf(id).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,''),esc(v.Kategori)]}),'Belum ada vendor (opsional). Klik "Ubah data" untuk menambahkan vendor.');
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">'+ic('project')+'</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
-  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">Unggah dokumen</button>'+(isV?'':'<button class="btn s" onclick="upl(\''+n+'\',\''+id+'\',1)">⬆ Unggah finance</button>')+'<button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
+  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">Unggah dokumen</button>'+(isV?'':'<button class="btn s" onclick="upl(\''+n+'\',\''+id+'\',1)">Unggah finance</button>')+'<button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
   dsecs(isV,docs))}
 function frm(n,id){
