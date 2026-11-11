@@ -126,7 +126,7 @@ function det(n,id){DT=[n,id];
   rel=isV?tbl(['Tahun','Project','Status'],pOf(id).map(function(p){return ['det(\'Project\',\''+p.ID+'\')',esc(p.Tahun),esc(p.Nama),bd(p.Status)]}),'Belum terlibat di project mana pun'):
     tbl(['Vendor','Kategori'],vOf(id).map(function(v){return ['det(\'Vendor\',\''+v.ID+'\')',who(v.Nama,''),esc(v.Kategori)]}),'Belum ada vendor (opsional). Klik "Ubah data" untuk menambahkan vendor.');
   show('<div class="dh">'+(isV?av(o.Nama):'<span class="av p">'+ic('project')+'</span>')+'<div class="dt"><h2>'+esc(o.Nama)+'</h2><small>'+(isV?esc(o.Kategori||'Vendor'):'Kontrak '+esc(o.Tahun)+(o.NoKontrak?' · '+esc(o.NoKontrak):''))+'</small></div>'+bd(o.Status)+'<button class="x" onclick="cl()">✕</button></div>'+
-  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">⬆ Unggah dokumen</button>'+(isV?'':'<button class="btn s" onclick="upl(\''+n+'\',\''+id+'\',1)">⬆ Unggah finance</button>')+'<button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
+  '<div class="acts"><button class="btn" onclick="upl(\''+n+'\',\''+id+'\')">Unggah dokumen</button>'+(isV?'':'<button class="btn s" onclick="upl(\''+n+'\',\''+id+'\',1)">Unggah finance</button>')+'<button class="btn s" onclick="frm(\''+n+'\',\''+id+'\')">✎ Ubah data</button><button class="btn s dg" onclick="hapus(\''+n+'\',\''+id+'\')">🗑 Hapus</button></div>'+
   (kv?'<div class="kv">'+kv+'</div>':'')+'<div class="sec"><h3>'+(isV?'Project':'Vendor')+'</h3>'+rel+'</div>'+
   dsecs(isV,docs))}
 function frm(n,id){
@@ -181,7 +181,7 @@ function dgrp(L,g){
   var op=ks.length<=8;
   return ks.slice(0,LIM).map(function(k){var x=m[k];return '<details class="grp"'+(op?' open':'')+'><summary><span>'+esc(x.l)+'</span><span class="cnt">'+x.r.length+'</span></summary>'+tbl(DH,x.r.map(drow),'')+'</details>'}).join('')+mr(ks.length)}
 function dlist(){
-  var up='<button class="btn" onclick="upl(\'G\')">+ Unggah Dokumen</button>';
+  var up='<button class="btn" onclick="upl(\'G\')">Unggah Dokumen</button>';
   if(!D.dok.length)return pg('Dokumen','Belum ada dokumen',up)+'<div class="pn"><div class="empty cta"><div class="ei">'+ic('doc',34)+'</div><b>Belum ada dokumen</b><p>Unggah dokumen pertama untuk mulai mengisi database.</p>'+up+'</div></div>';
   var js=[];D.dok.forEach(function(d){if(d.Jenis&&js.indexOf(d.Jenis)<0)js.push(d.Jenis)});js.sort();
   var L=D.dok.filter(function(d){var s=dst(d);return (!DF.k||cat(d)==DF.k)&&(!DF.j||d.Jenis==DF.j)&&(!DF.v||d.VendorID==DF.v)&&(!DF.s||(DF.s=='perlu'?(s=='exp'||s=='soon'):s==DF.s))}).reverse();
